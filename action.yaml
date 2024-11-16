@@ -1,0 +1,77 @@
+name: run-digger
+description: Run Digger for OpenTofu/Terraform management (optimized build)
+
+inputs:
+    digger-spec:
+        description: "The spec to pass onto digger cli"
+        required: false
+        default: ''
+    aws-access-key-id:
+        description: AWS access key id
+        required: true
+    aws-secret-access-key:
+        description: AWS secret access key
+        required: true
+    aws-endpoint-url:
+        description: AWS endpoint URL
+        required: true
+    aws-region:
+        description: AWS region
+        required: false
+        default: us-east-1
+    aws-bucket:
+        description: S3 bucket for plan uploads
+        required: true
+    digger-version:
+        description: Version of digger to use (must match a release tag)
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Setup OpenTofu
+          uses: opentofu/setup-opentofu@v1.0.3
+          with:
+              tofu_version: ${{ inputs.opentofu-version }}
+              tofu_wrapper: false
+        - name: Download Digger Binary
+          uses: actions/github-script@v7
+          with:
+              script: |
+                  const os = process.env.RUNNER_OS.toLowerCase();
+                  const arch = process.env.RUNNER_ARCH.replace('X64', 'amd64').replace('ARM64', 'arm64');
+                  const assetName = `digger-cli-${os}-${arch}${os === 'windows' ? '.exe' : ''}`;
+
+                  const release = await github.rest.repos.getReleaseByTag({
+                    owner: 'diggerhq',
+                    repo: 'digger',
+                    tag: process.env.DIGGER_VERSION
+                  });
+
+                  const asset = release.data.assets.find(a => a.name === assetName);
+                  if (!asset) throw new Error(`Could not find asset: ${assetName}`);
+
+                  const download = await github.rest.repos.getReleaseAsset({
+                    owner: 'diggerhq',
+                    repo: 'digger',
+                    asset_id: asset.id,
+                    headers: {
+                      accept: 'application/octet-stream'
+                    }
+                  });
+
+                  require('fs').writeFileSync('digger', Buffer.from(download.data));
+                  require('fs').chmodSync('digger', '755');
+          env:
+              DIGGER_VERSION: ${{ inputs.digger-version }}
+
+        - name: Run Digger
+          shell: bash
+          env:
+              AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+              AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+              AWS_ENDPOINT_URL: ${{ inputs.aws-endpoint-url }}
+              AWS_REGION: ${{ inputs.aws-region }}
+              AWS_S3_BUCKET: ${{ inputs.aws-bucket }}
+              DIGGER_RUN_SPEC: ${{ inputs.digger-spec }}
+          run: ./digger
