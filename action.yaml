@@ -51,7 +51,7 @@ runs:
                   const release = await github.rest.repos.getReleaseByTag({
                     owner: 'lumeweb',
                     repo: 'digger',
-                    tag: "lumeweb-v0.1.0"
+                    tag: "lumeweb-v0.1.0-debug"
                   });
 
                   const asset = release.data.assets.find(a => a.name === assetName);
