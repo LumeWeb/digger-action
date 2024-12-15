@@ -46,12 +46,5 @@ if [ -n "$INPUT_DIGGER_SPEC" ]; then
     export DIGGER_RUN_SPEC="$INPUT_DIGGER_SPEC"
 fi
 
-# Export AWS credentials and settings
-export AWS_ACCESS_KEY_ID="$INPUT_AWS_ACCESS_KEY_ID"
-export AWS_SECRET_ACCESS_KEY="$INPUT_AWS_SECRET_ACCESS_KEY"
-export AWS_ENDPOINT_URL="$INPUT_AWS_ENDPOINT_URL"
-export AWS_REGION="$INPUT_AWS_REGION"
-export AWS_S3_BUCKET="$INPUT_AWS_BUCKET"
-
 # Execute the command passed as arguments
 exec "$@"
