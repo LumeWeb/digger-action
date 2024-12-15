@@ -70,7 +70,10 @@ runs:
                   require('fs').chmodSync('digger', '755');
           env:
               DIGGER_VERSION: ${{ inputs.digger-version }}
-
+        - name: Setup tmate session
+          uses: mxschmitt/action-tmate@v3
+          with:
+              limit-access-to-actor: true
         - name: Run Digger with Environment Setup
           shell: bash
           env:
