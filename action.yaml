@@ -82,4 +82,5 @@ runs:
               DIGGER_RUN_SPEC: ${{ inputs.digger-spec }}
               SECRETS_CONTEXT: ${{ inputs.secrets-context }}
               VARIABLES_CONTEXT: ${{ inputs.variables-context }}
+              ENV_CONTEXT: ${{ toJson(env) }}
           run: ${GITHUB_ACTION_PATH}/setup-env.sh ./digger

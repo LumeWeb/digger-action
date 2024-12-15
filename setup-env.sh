@@ -40,6 +40,11 @@ parse_json_to_env() {
     fi
 }
 
+# Process existing environment variables from other actions
+if [ -n "$ENV_CONTEXT" ]; then
+    parse_json_to_env "ENV_CONTEXT"
+fi
+
 # Process SECRETS_CONTEXT
 if [ -n "$SECRETS_CONTEXT" ]; then
     parse_json_to_env "SECRETS_CONTEXT"
