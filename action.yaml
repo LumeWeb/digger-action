@@ -25,6 +25,12 @@ inputs:
     digger-version:
         description: Version of digger to use (must match a release tag)
         required: true
+    secrets-context:
+        description: "Pre-encoded secrets context"
+        required: true
+    variables-context:
+        description: "Pre-encoded variables context"
+        required: true
 
 runs:
     using: composite
@@ -74,6 +80,6 @@ runs:
               AWS_REGION: ${{ inputs.aws-region }}
               AWS_S3_BUCKET: ${{ inputs.aws-bucket }}
               DIGGER_RUN_SPEC: ${{ inputs.digger-spec }}
-              SECRETS_CONTEXT: ${{ toJson(secrets) }}
-              VARIABLES_CONTEXT: ${{ toJson(vars) }}
+              SECRETS_CONTEXT: ${{ inputs.secrets-context }}
+              VARIABLES_CONTEXT: ${{ inputs.variables-context }}
           run: ./digger
