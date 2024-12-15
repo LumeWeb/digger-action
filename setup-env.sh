@@ -3,47 +3,29 @@
 # Function to validate environment variable name
 is_valid_env_name() {
     local name="$1"
-    # Environment variables must start with letter/underscore and contain only alphanumeric chars and underscores
     [[ $name =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]
 }
 
-# Function to parse JSON and convert to env vars
+# Function to parse JSON string and attempt to extract key-value pairs
 parse_json_to_env() {
-    local json_var="$1"
-    local json_content
-
-    # Get the JSON content from environment variable
-    json_content="${!json_var}"
+    local var_name="$1"
+    local json_content="${!var_name}"
 
     if [ -n "$json_content" ]; then
-        # Use jq to parse JSON and convert to env vars
-        while IFS='=' read -r key value; do
-            # Skip if key is empty
-            if [ -z "$key" ]; then
-                continue
-            fi
-
-            # Validate the key is a valid environment variable name
-            if ! is_valid_env_name "$key"; then
-                echo "Warning: Skipping invalid environment variable name: $key" >&2
-                continue
-            fi
-
-            # Remove quotes from the value
-            value="${value%\"}"
-            value="${value#\"}"
-
-            if [ -n "$key" ]; then
-                export "$key=$value"
-            fi
-        done < <(echo "$json_content" | jq -r 'to_entries | .[] | select(.key != null and .key != "") | .key + "=" + (.value | tostring)')
+        # First, try to parse as JSON
+        if echo "$json_content" | jq empty 2>/dev/null; then
+            # It's valid JSON, export it as a whole
+            export "$var_name=$json_content"
+        else
+            # Not JSON, process as regular key=value pairs
+            echo "$json_content" | while IFS='=' read -r key value; do
+                if [ -n "$key" ] && is_valid_env_name "$key"; then
+                    export "$key=$value"
+                fi
+            done
+        fi
     fi
 }
-
-# Process existing environment variables from other actions
-if [ -n "$ENV_CONTEXT" ]; then
-    parse_json_to_env "ENV_CONTEXT"
-fi
 
 # Process SECRETS_CONTEXT
 if [ -n "$SECRETS_CONTEXT" ]; then
@@ -56,22 +38,12 @@ if [ -n "$VARIABLES_CONTEXT" ]; then
 fi
 
 # Handle TF_VAR_ environment variables
-# Get all current environment variables
 while IFS='=' read -r key value; do
     if [[ $key == TF_VAR_* ]]; then
-        # Extract the variable name part after TF_VAR_
         var_name="${key#TF_VAR_}"
-        # Create lowercase version
         lowercase_key="TF_VAR_${var_name,,}"
 
-        # Validate the key
-        if ! is_valid_env_name "$lowercase_key"; then
-            echo "Warning: Skipping invalid TF_VAR name: $lowercase_key" >&2
-            continue
-        fi
-
-        # Only set if lowercase version doesn't exist
-        if [ -z "${!lowercase_key}" ]; then
+        if [ -z "${!lowercase_key}" ] && is_valid_env_name "$lowercase_key"; then
             export "$lowercase_key=$value"
         fi
     fi
@@ -81,6 +53,13 @@ done < <(env)
 if [ -n "$INPUT_DIGGER_SPEC" ]; then
     export DIGGER_RUN_SPEC="$INPUT_DIGGER_SPEC"
 fi
+
+# Export all environment variables from env
+while IFS='=' read -r key value; do
+    if is_valid_env_name "$key"; then
+        export "$key=$value"
+    fi
+done < <(env)
 
 # Execute the command passed as arguments
 exec "$@"
