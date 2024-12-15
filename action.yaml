@@ -83,4 +83,6 @@ runs:
               AWS_REGION: ${{ inputs.aws-region }}
               AWS_S3_BUCKET: ${{ inputs.aws-bucket }}
               DIGGER_RUN_SPEC: ${{ inputs.digger-spec }}
+              SECRETS_CONTEXT: ${{ inputs.secrets-context }}
+              VARIABLES_CONTEXT: ${{ inputs.variables-context }}
           run: ${GITHUB_ACTION_PATH}/setup-env.sh ./digger
