@@ -25,18 +25,21 @@ parse_context_json() {
                         value="${value%\"}"
                         value="${value#\"}"
                         export "$key=$value"
+                        echo "Exported $key"
                     fi
                 done < <(echo "$json_content" | jq -r 'to_entries | .[] | .key + "=" + (.value | tostring)')
             else
                 # Pass through JSON as-is
                 if is_valid_env_name "$json_var"; then
                     export "$json_var=$json_content"
+                    echo "Exported $json_var"
                 fi
             fi
         else
             # Not JSON, export as-is
             if is_valid_env_name "$json_var"; then
                 export "$json_var=$json_content"
+                echo "Exported $json_var"
             fi
         fi
     fi
