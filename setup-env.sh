@@ -16,6 +16,7 @@ parse_json_to_env() {
         if echo "$json_content" | jq empty 2>/dev/null; then
             # It's valid JSON, export it as a whole
             export "$var_name=$json_content"
+            echo "Processed JSON: $var_name"
         else
             # Not JSON, process as regular key=value pairs
             echo "$json_content" | while IFS='=' read -r key value; do
