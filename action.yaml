@@ -35,6 +35,27 @@ inputs:
 runs:
     using: composite
     steps:
+        - name: Debug Workflow Dispatch Event
+          uses: actions/github-script@v7
+          with:
+              script: |
+                  console.log('Workflow Dispatch Event:');
+                  
+                  if (context.eventName === 'workflow_dispatch') {
+                    const inputs = context.payload.inputs;
+                    console.log('Run Name:', inputs.run_name);
+                  
+                    // Split spec into smaller chunks
+                    console.log('Spec (chunked):');
+                    const specStr = inputs.spec;
+                    const chunkSize = 500;
+                    for (let i = 0; i < specStr.length; i += chunkSize) {
+                        console.log(specStr.slice(i, i + chunkSize));
+                    }
+                  }
+          env:
+              SECRETS_CONTEXT: ${{ inputs.secrets-context }}
+              VARIABLES_CONTEXT: ${{ inputs.variables-context }}
         - name: Setup OpenTofu
           uses: opentofu/setup-opentofu@v1.0.3
           with:
