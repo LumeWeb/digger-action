@@ -49,16 +49,16 @@ runs:
                   const assetName = `digger-cli-${os}-${arch}${os === 'windows' ? '.exe' : ''}`;
 
                   const release = await github.rest.repos.getReleaseByTag({
-                    owner: 'lumeweb',
+                    owner: 'diggerhq',
                     repo: 'digger',
-                    tag: "lumeweb-v0.1.0-debug"
+                    tag: process.env.DIGGER_VERSION
                   });
 
                   const asset = release.data.assets.find(a => a.name === assetName);
                   if (!asset) throw new Error(`Could not find asset: ${assetName}`);
 
                   const download = await github.rest.repos.getReleaseAsset({
-                    owner: 'lumeweb',
+                    owner: 'diggerhq',
                     repo: 'digger',
                     asset_id: asset.id,
                     headers: {
