@@ -21,6 +21,7 @@ parse_json_to_env() {
             echo "$json_content" | while IFS='=' read -r key value; do
                 if [ -n "$key" ] && is_valid_env_name "$key"; then
                     export "$key=$value"
+                    echo "Processed key: $key"
                 fi
             done
         fi
