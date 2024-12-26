@@ -43,6 +43,14 @@ inputs:
     description: 'project name for digger to run in case of manual mode'
     required: false
     default: ''
+  reporting-strategy:
+    description: 'comments_per_run or latest_run_comment, anything else will default to original behavior of multiple comments'
+    required: false
+    default: 'comments_per_run'
+  post-plans-as-one-comment:
+    description: Post plans as one comment
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -97,4 +105,6 @@ runs:
         SECRETS_CONTEXT: ${{ inputs.secrets-context }}
         VARIABLES_CONTEXT: ${{ inputs.variables-context }}
         ENV_CONTEXT: ${{ toJson(env) }}
+        REPORTING_STRATEGY: ${{ inputs.reporting-strategy }}
+        ACCUMULATE_PLANS: ${{ inputs.post-plans-as-one-comment == 'true' }}
       run: ${GITHUB_ACTION_PATH}/setup-env.sh ./digger
