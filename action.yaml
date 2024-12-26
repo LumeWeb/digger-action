@@ -31,7 +31,18 @@ inputs:
     variables-context:
         description: "Pre-encoded variables context"
         required: true
-
+    mode:
+        description: 'manual, drift-detection or otherwise'
+        required: false
+        default: ''
+    command:
+        description: 'digger plan or digger apply in case of manual mode'
+        required: false
+        default: ''
+    project:
+        description: 'project name for digger to run in case of manual mode'
+        required: false
+        default: ''
 runs:
     using: composite
     steps:
@@ -74,6 +85,9 @@ runs:
         - name: Run Digger with Environment Setup
           shell: bash
           env:
+              INPUT_DIGGER_PROJECT: ${{ inputs.project }}
+              INPUT_DIGGER_MODE: ${{ inputs.mode }}
+              INPUT_DIGGER_COMMAND: ${{ inputs.command }}
               AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
               AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
               AWS_ENDPOINT_URL: ${{ inputs.aws-endpoint-url }}
