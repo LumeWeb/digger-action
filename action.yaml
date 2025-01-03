@@ -19,9 +19,6 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
-  aws-bucket:
-    description: S3 bucket for plan uploads
-    required: true
   digger-version:
     description: Version of digger to use (must match a release tag)
     required: true
@@ -51,6 +48,12 @@ inputs:
     description: Post plans as one comment
     required: false
     default: 'false'
+  upload-plan-destination:
+    description: Destination to upload the plan to. gcp, github and aws are currently supported.
+    required: false
+  upload-plan-destination-s3-bucket:
+    description: Name of the destination bucket for AWS S3. Should be provided if destination == aws
+    required: false
 runs:
   using: composite
   steps:
@@ -93,6 +96,8 @@ runs:
     - name: Run Digger with Environment Setup
       shell: bash
       env:
+        PLAN_UPLOAD_DESTINATION: ${{ inputs.upload-plan-destination }}
+        AWS_S3_BUCKET: ${{ inputs.upload-plan-destination-s3-bucket }}
         INPUT_DIGGER_PROJECT: ${{ inputs.project }}
         INPUT_DIGGER_MODE: ${{ inputs.mode }}
         INPUT_DIGGER_COMMAND: ${{ inputs.command }}
@@ -100,7 +105,6 @@ runs:
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
         AWS_ENDPOINT_URL: ${{ inputs.aws-endpoint-url }}
         AWS_REGION: ${{ inputs.aws-region }}
-        AWS_S3_BUCKET: ${{ inputs.aws-bucket }}
         DIGGER_RUN_SPEC: ${{ inputs.digger-spec }}
         SECRETS_CONTEXT: ${{ inputs.secrets-context }}
         VARIABLES_CONTEXT: ${{ inputs.variables-context }}
